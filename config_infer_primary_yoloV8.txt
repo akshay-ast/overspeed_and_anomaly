@@ -2,11 +2,11 @@
 gpu-id=0
 net-scale-factor=0.0039215697906911373
 model-color-format=0
-custom-network-config=weights/yolov8s.cfg
-model-file=weights/yolov8s.wts
-model-engine-file=yolov8.engine
+custom-network-config=/opt/nvidia/deepstream/deepstream-6.2/sources/deepstream_python_apps/apps/overspeed_and_anomaly/weights/yolov8s.cfg
+model-file=/opt/nvidia/deepstream/deepstream-6.2/sources/deepstream_python_apps/apps/overspeed_and_anomaly/weights/yolov8s.wts
+model-engine-file=/opt/nvidia/deepstream/deepstream-6.2/sources/deepstream_python_apps/apps/overspeed_and_anomaly/model_b5_gpu0_fp32.engine
 #int8-calib-file=calib.table
-labelfile-path=coco-labels.txt
+labelfile-path=/opt/nvidia/deepstream/deepstream-6.2/sources/deepstream_python_apps/apps/overspeed_and_anomaly/coco-labels.txt
 batch-size=1
 network-mode=0
 num-detected-classes=80
@@ -19,7 +19,7 @@ cluster-mode=2
 maintain-aspect-ratio=1
 symmetric-padding=1
 parse-bbox-func-name=NvDsInferParseYolo
-custom-lib-path=nvdsinfer_custom_impl_Yolo/libnvdsinfer_custom_impl_Yolo.so
+custom-lib-path=/opt/nvidia/deepstream/deepstream-6.2/sources/deepstream_python_apps/apps/overspeed_and_anomaly/nvdsinfer_custom_impl_Yolo/libnvdsinfer_custom_impl_Yolo.so
 engine-create-func-name=NvDsInferYoloCudaEngineGet
 
 [class-attrs-all]

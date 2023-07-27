@@ -35,20 +35,63 @@ display-font-size=14
 enable=1
 #Label;direction;lc
 
+#ccu road 1
 line-crossing-Front-1=555;210;1550;770;415;355;1100;315
 line-crossing-Back-1=1550;770;555;210;415;355;1100;315
 
 line-crossing-Front-2=555;210;1550;770;660;820;1765;600
 line-crossing-Back-2=1550;770;555;210;660;820;1765;600
 
+#new pac back 1
 #line-crossing-Front-1=305;270;415;445;225;445;590;370
 #line-crossing-Back-1=415;445;305;270;590;370;225;445
 
 #line-crossing-Front-2=305;270;415;445;300;940;1180;715
 #line-crossing-Back-2=415;445;305;270;1180;715;300;940
 
+#new pac back 2
+#line-crossing-Front-1=895;555;1105;305;450;500;1380;590
+#line-crossing-Back-1=1105;305;895;555;450;500;1380;590
 
-class-id=7
+#line-crossing-Front-2=895;555;1105;305;860;300;1385;325
+#line-crossing-Back-2=1105;305;895;555;860;300;1385;325
+
+# pa drum road 1
+#line-crossing-Front-1=865;585;1525;315;530;395;1920;705
+#line-crossing-Back-1=1525;315;865;585;530;395;1920;705
+
+#line-crossing-Front-2=865;585;1525;315;1205;280;1920;395
+#line-crossing-Back-2=1525;315;865;585;1205;280;1920;395
+
+# pa drum road 2
+#line-crossing-Front-1=1370;645;920;300;650;720;1920;540
+#line-crossing-Back-1=920;300;1370;645;650;720;1920;540
+
+#line-crossing-Front-2=1370;645;920;300;545;340;1545;270
+#line-crossing-Back-2=920;300;1370;645;545;340;1545;270
+
+# material gate c1
+#line-crossing-Front-1=1370;645;920;300;650;720;1920;540
+#line-crossing-Back-1=920;300;1370;645;650;720;1920;540
+
+#line-crossing-Front-2=1370;645;920;300;545;340;1545;270
+#line-crossing-Back-2=920;300;1370;645;545;340;1545;270
+
+# material gate c3
+#line-crossing-Front-1=1370;645;920;300;650;720;1920;540
+#line-crossing-Back-1=920;300;1370;645;650;720;1920;540
+
+#line-crossing-Front-2=1370;645;920;300;545;340;1545;270
+#line-crossing-Back-2=920;300;1370;645;545;340;1545;270
+
+# tech build corner 1
+#line-crossing-Front-1=1370;645;920;300;650;720;1920;540
+#line-crossing-Back-1=920;300;1370;645;650;720;1920;540
+
+#line-crossing-Front-2=1370;645;920;300;545;340;1545;270
+#line-crossing-Back-2=920;300;1370;645;545;340;1545;270
+
+class-id=2;7
 #extended when 0- only counts crossing on the configured Line
 #              1- assumes extended Line crossing counts all the crossing
 extended=1
@@ -58,5 +101,117 @@ extended=1
 #strict  : Strict direction adherence expected compared to mode=balanced
 mode=loose
 
+[roi-filtering-stream-0]
+#enable or disable following feature
+enable=0
+#ROI to filter select objects, and remove from meta data
+#roi-RF=540;225;705;225;1555;645;1000;755
+roi-RF=690;65;1005;65;1000;295;875;295;690;225
+#remove objects in the ROI
+inverse-roi=0
+class-id=2;7
 
+[line-crossing-stream-1]
+enable=1
+#Label;direction;lc
 
+#new pac back 1
+line-crossing-Front-1=305;270;415;445;225;445;590;370
+line-crossing-Back-1=415;445;305;270;590;370;225;445
+
+line-crossing-Front-2=305;270;415;445;300;940;1180;715
+line-crossing-Back-2=415;445;305;270;1180;715;300;940
+
+class-id=2;7
+#extended when 0- only counts crossing on the configured Line
+#              1- assumes extended Line crossing counts all the crossing
+extended=1
+#LC modes supported:
+#loose   : counts all crossing without strong adherence to direction
+#balanced: Strict direction adherence expected compared to mode=loose
+#strict  : Strict direction adherence expected compared to mode=balanced
+mode=loose
+
+[line-crossing-stream-2]
+enable=0
+#Label;direction;lc
+
+#new pac back 2
+line-crossing-Front-1=895;555;1105;305;450;500;1380;590
+line-crossing-Back-1=1105;305;895;555;450;500;1380;590
+
+line-crossing-Front-2=895;555;1105;305;860;300;1385;325
+line-crossing-Back-2=1105;305;895;555;860;300;1385;325
+
+class-id=2;7
+#extended when 0- only counts crossing on the configured Line
+#              1- assumes extended Line crossing counts all the crossing
+extended=1
+#LC modes supported:
+#loose   : counts all crossing without strong adherence to direction
+#balanced: Strict direction adherence expected compared to mode=loose
+#strict  : Strict direction adherence expected compared to mode=balanced
+mode=loose
+
+[line-crossing-stream-2]
+enable=1
+#Label;direction;lc
+
+# material gate c1
+line-crossing-Front-1=1370;645;920;300;650;720;1920;540
+line-crossing-Back-1=920;300;1370;645;650;720;1920;540
+
+line-crossing-Front-2=1370;645;920;300;545;340;1545;270
+line-crossing-Back-2=920;300;1370;645;545;340;1545;270
+
+class-id=2;7
+#extended when 0- only counts crossing on the configured Line
+#              1- assumes extended Line crossing counts all the crossing
+extended=1
+#LC modes supported:
+#loose   : counts all crossing without strong adherence to direction
+#balanced: Strict direction adherence expected compared to mode=loose
+#strict  : Strict direction adherence expected compared to mode=balanced
+mode=loose
+
+[line-crossing-stream-3]
+enable=1
+#Label;direction;lc
+
+# material gate c3
+line-crossing-Front-1=1370;645;920;300;0;720;1920;540
+line-crossing-Back-1=920;300;1370;645;0;720;1920;540
+
+line-crossing-Front-2=1370;645;920;300;0;340;1545;270
+line-crossing-Back-2=920;300;1370;645;0;340;1545;270
+
+class-id=2;7
+#extended when 0- only counts crossing on the configured Line
+#              1- assumes extended Line crossing counts all the crossing
+extended=1
+#LC modes supported:
+#loose   : counts all crossing without strong adherence to direction
+#balanced: Strict direction adherence expected compared to mode=loose
+#strict  : Strict direction adherence expected compared to mode=balanced
+mode=loose
+
+[line-crossing-stream-4]
+enable=1
+#Label;direction;lc
+
+# tech build corner 1
+line-crossing-Front-1=1370;645;920;300;650;720;1920;540
+line-crossing-Back-1=920;300;1370;645;650;720;1920;540
+
+line-crossing-Front-2=1370;645;920;300;545;340;1545;270
+line-crossing-Back-2=920;300;1370;645;545;340;1545;270
+
+class-id=2;7
+#extended when 0- only counts crossing on the configured Line
+#              1- assumes extended Line crossing counts all the crossing
+extended=1
+#LC modes supported:
+#loose   : counts all crossing without strong adherence to direction
+#balanced: Strict direction adherence expected compared to mode=loose
+#strict  : Strict direction adherence expected compared to mode=balanced
+mode=loose

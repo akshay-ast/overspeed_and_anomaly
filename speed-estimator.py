@@ -42,6 +42,12 @@ from botocore.exceptions import NoCredentialsError
 from db_utils import SECRET_KEY, BUCKET_NAME, ACCESS_KEY
 from db_utils import upload_file_to_s3, get_database, push_to_db
 perf_data = None
+from datetime import datetime, timedelta
+
+started=False
+stop_time =  None
+saveVideo = None
+image = None
 
 # Initialize constants
 MAX_DISPLAY_LEN=64
@@ -55,7 +61,7 @@ GST_CAPS_FEATURES_NVMM="memory:NVMM"
 OSD_PROCESS_MODE= 0
 OSD_DISPLAY_TEXT= 1
 # classes_dict = {0:"Car", 1: "Motorcycle", 2:"Bus", 3:"Truck"}
-classes_dict={7:'Truck'}
+classes_dict={2:'Car',7:'Truck'}
 LINE_SPACING = 10.0  # 10 meters distance between lines
 MPS_TO_KMH = 3.6
 
@@ -82,7 +88,7 @@ def push_to_db(frame, db_collection, img_name, alert):
 def nvanalytics_src_pad_buffer_probe(pad,info,u_data):
     global object_speeds, lock, speed_kmh, vehicle_coords
     global MPS_TO_KMH
-    global SECRET_KEY, BUCKET_NAME, ACCESS_KEY, db_collection  
+    global SECRET_KEY, BUCKET_NAME, ACCESS_KEY, db_collection,started,stop_time,saveVideo,frame_copy
     
     gst_buffer = info.get_buffer()
     if not gst_buffer:
@@ -116,6 +122,7 @@ def nvanalytics_src_pad_buffer_probe(pad,info,u_data):
                     user_meta = pyds.NvDsUserMeta.cast(l_user.data)
                     if user_meta.base_meta.meta_type == pyds.nvds_get_user_meta_type("NVIDIA.DSANALYTICSOBJ.USER_META"):
                         analytics_obj_info = pyds.NvDsAnalyticsObjInfo.cast(user_meta.user_meta_data)
+
 
                         # Check if the object has crossed any lines
                         if len(analytics_obj_info.lcStatus) > 0:
@@ -168,6 +175,10 @@ def nvanalytics_src_pad_buffer_probe(pad,info,u_data):
         # convert the array into cv2 default color format
         frame_copy = cv2.cvtColor(frame_copy, cv2.COLOR_RGBA2BGRA)
         frame_number=frame_meta.frame_num
+        if frame_number in [0,1,2,3]:
+            stop_time = datetime.now()
+            print(stop_time)
+
         l_user=frame_meta.frame_user_meta_list
         num_rects = frame_meta.num_obj_meta                      
         
@@ -197,7 +208,7 @@ def nvanalytics_src_pad_buffer_probe(pad,info,u_data):
         # Using pyds.get_string() to get display_text as string
         pyds.nvds_add_display_meta_to_frame(frame_meta, display_meta)
 
-        if speed_kmh > 0:             
+        if speed_kmh > 10:             
             cv2.putText(frame_copy, text=f"Speed: {speed_kmh:.2f}km/h", org=(50,600), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(0,0,255), thickness=2)
             left = int(vehicle_coords.left)
             top = int(vehicle_coords.top)
@@ -215,13 +226,31 @@ def nvanalytics_src_pad_buffer_probe(pad,info,u_data):
             "Camera": "CCU Road 1",
             "Date": date,
             "Time": time_1,
-            "Alert_Type": "Overspeeding",
+            "Alert_Type": "Overspeed",
             "Status": "Warning",
                         }
             print(alert)
             push_to_db(frame_copy, db_collection, img_name, alert)
             print("Pushed to database")            
             speed_kmh = 0
+        now1 = datetime.now()
+        if not started and now1 > stop_time:
+            stop_time = datetime.now() + timedelta(hours=3)
+            t_stamp = datetime.now()
+            t_stamp = t_stamp.strftime('%d-%m-%Y_%H:%M:%S:%f').replace(" ", "_")
+            #saveVideo = cv2.VideoWriter('{}Frisk{}.mp4'.format(f"stream{frame_meta.source_id}", t_stamp),
+            #        cv2.VideoWriter_fourcc(*'XVID'), 5, (1920, 1080))
+            saveVideo = cv2.VideoWriter(t_stamp+ ".mp4",cv2.VideoWriter_fourcc(*'MJPG'),10, (1920, 1080))
+            started=True
+        if now1 <= stop_time and started:
+            video_frame = cv2.cvtColor(frame_copy, cv2.COLOR_BGRA2BGR)
+            saveVideo.write(video_frame)
+            print("writing started")
+        if now1 > stop_time and started:
+            saveVideo.release()
+            started =  False
+            print("stopped")
+
                     
         # Update frame rate through this probe
         stream_index = "stream{0}".format(frame_meta.pad_index)
@@ -307,14 +336,30 @@ def create_source_bin(index,uri):
 def main():
     # Check input arguments
     SOURCES = {
-    # 0:["file:/home/akshay/assert/birla-vilayat/video-feed/vehicle_detection/new-pac-back-1/trim-1-new.mp4","1_1"],
-    0:["file:/home/akshay/assert/birla-vilayat/video-feed/vehicle_detection/ccu-road-1/ccu-road-2-test.mp4"]
+    # Stream 0 CCU Road 1
+    0:["rtsp://admin:Pass%40123@192.168.100.104:554/Streaming/Channels/101/?transportmode=unicast"],
+    # 0:["file:/home/akshay/assert/birla/vehicle/ccu-road-1/ccur1-trim-1.mp4"],
+    # Stream 1 New PAC back 1
+    # 1:["file:/home/akshay/assert/birla/vehicle/new-pac-back-2/trim-1.mp4"],
+    1:["rtsp://admin:Pass%40123@192.168.100.114:554/Streaming/Channels/101/?transportmode=unicast"],
+    # Stream 2 New PAC back 2  
+    # 2:["file:/home/akshay/assert/birla/vehicle/pa-drum-road-1/padr1-trim-1.mp4"],
+    # 2:["rtsp://admin:Pass%40123@192.168.100.115:554/Streaming/Channels/101/?transportmode=unicast"],
+    # Stream 2 Material Gate C1
+    # 3:["file:/home/akshay/assert/birla/vehicle/ccu-road-1/ccur1-trim-1.mp4"],
+    2:["rtsp://admin:Pass%40123@192.168.100.51:554/Streaming/Channels/101/?transportmode=unicast"],
+    # Stream 3 Material Gate C3
+    # 3:["file:/home/akshay/assert/birla/vehicle/ccu-road-1/ccur1-trim-1.mp4"],
+    3:["rtsp://admin:Pass%40123@192.168.100.53:554/Streaming/Channels/101/?transportmode=unicast"],
+    # Stream 4 Tech Build Corner 1
+    # 5:["file:/home/akshay/assert/birla/vehicle/ccu-road-1/ccur1-trim-1.mp4"],
+    4:["rtsp://admin:Pass%40123@192.168.100.82:554/Streaming/Channels/101/?transportmode=unicast"],
     }
     number_sources = len(SOURCES.items())
     global perf_data
     perf_data = PERF_DATA(number_sources)
     #number_sources=len(args)-1
-    DISPLAY_VIDEO = True
+    DISPLAY_VIDEO = False
 
     # Standard GStreamer initialization
     GObject.threads_init()
@@ -361,7 +406,7 @@ def main():
     nvanalytics = Gst.ElementFactory.make("nvdsanalytics", "analytics")
     if not nvanalytics:
         sys.stderr.write(" Unable to create nvanalytics \n")
-    nvanalytics.set_property("config-file", "config_nvdsanalytics.txt")
+    nvanalytics.set_property("config-file", "/opt/nvidia/deepstream/deepstream-6.2/sources/deepstream_python_apps/apps/overspeed_and_anomaly/config_nvdsanalytics.txt")
     print("Creating tiler \n ")
     tiler=Gst.ElementFactory.make("nvmultistreamtiler", "nvtiler")
     if not tiler:
@@ -398,7 +443,7 @@ def main():
     streammux.set_property('height', 720)
     streammux.set_property('batch-size', number_sources)
     streammux.set_property('batched-push-timeout', (1/25)*1000*1000)
-    pgie.set_property('config-file-path', "config_infer_primary_yoloV8.txt")
+    pgie.set_property('config-file-path', "/opt/nvidia/deepstream/deepstream-6.2/sources/deepstream_python_apps/apps/overspeed_and_anomaly/config_infer_primary_yoloV8.txt")
     pgie_batch_size=pgie.get_property("batch-size")
     if(pgie_batch_size != number_sources):
         print("WARNING: Overriding infer-config batch-size",pgie_batch_size," with number of sources ", number_sources," \n")
@@ -411,7 +456,7 @@ def main():
     tiler.set_property("height", TILED_OUTPUT_HEIGHT)
     #Set properties of tracker
     config = configparser.ConfigParser()
-    config.read('dsnvanalytics_tracker_config.txt')
+    config.read('/opt/nvidia/deepstream/deepstream-6.2/sources/deepstream_python_apps/apps/overspeed_and_anomaly/dsnvanalytics_tracker_config.txt')
     config.sections()
     for key in config['tracker']:
         if key == 'tracker-width' :
